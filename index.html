@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ataraxia: chain orbs, call air strikes</title>
+  <meta name="description" content="Ataraxia is a top-down action game for iPhone. Pull number orbs from the sand, chain them into a sum and call in an air strike that hits as hard as your answer.">
+  <meta property="og:title" content="Ataraxia">
+  <meta property="og:description" content="Chain orbs. Call air strikes. A pixel-art action game for iPhone.">
+  <meta property="og:image" content="assets/img/icon-512.png">
+  <meta name="theme-color" content="#172038">
+  <link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="wrap bar">
+    <a class="home" href="./"><img src="assets/img/favicon-64.png" alt="" width="36" height="36">Ataraxia</a>
+      <nav aria-label="Site">
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy</a>
+      </nav>
+    </header>
+
+  <main id="main">
+    <div class="sky">
+      <img class="ship pixel" src="assets/img/ship.png" alt="" width="223" height="69">
+      <section class="wrap hero" aria-labelledby="title">
+        <div>
+          <h1 id="title">Ataraxia</h1>
+          <p class="lede">Pull number orbs from the sand, chain them into a sum, and call in an air strike that hits as hard as your answer.</p>
+          <p class="facts-line">For iPhone. Free, with no ads and no purchases.</p>
+          <!-- When the app is live: replace this span with
+               <a class="store notched" href="[App Store link]">Download on the App Store</a> -->
+          <span class="store notched" aria-disabled="true">Coming soon to the App Store</span>
+        </div>
+
+        <div class="processor notched" aria-labelledby="try">
+          <h2 id="try">Try a chain</h2>
+          <p class="hint">Tap an orb to change it. The sum is worked out left to right, like a calculator.</p>
+          <div class="chain" id="chain">
+            <button class="orb number" type="button" data-kind="number" data-value="7" aria-label="Number 7">7</button>
+            <button class="orb operator" type="button" data-kind="operator" data-value="×" aria-label="Times">×</button>
+            <button class="orb number" type="button" data-kind="number" data-value="3" aria-label="Number 3">3</button>
+            <button class="orb operator" type="button" data-kind="operator" data-value="+" aria-label="Plus">+</button>
+            <button class="orb number" type="button" data-kind="number" data-value="4" aria-label="Number 4">4</button>
+          </div>
+          <p class="result" id="result" aria-live="polite">25 damage<small>A tier 2 strike: a wider blast.</small></p>
+        </div>
+      </section>
+      <div class="ground" aria-hidden="true"></div>
+    </div>
+
+      <section class="field" aria-labelledby="how">
+        <div class="wrap">
+          <h2 id="how">How a run goes</h2>
+          <ol class="run">
+            <li><h3>Land</h3><p>Oreivax, a space pirate, beams down to a desert region. Swarms close in from every side.</p></li>
+            <li><h3>Collect orbs</h3><p>Walk near number and operator orbs and your ship beams them into its processor.</p></li>
+            <li><h3>Chain a sum</h3><p>Drag across the processor, number, operator, number, and let go.</p></li>
+            <li><h3>Strike</h3><p>The ship fires where enemies are thickest. The bigger the answer, the bigger the blast.</p></li>
+            <li><h3>Bank crystals</h3><p>Clear the region, spend crystals on upgrades that last, and take the next one.</p></li>
+          </ol>
+
+          <div class="shots">
+            <!-- Replace each .frame div with <img src="assets/img/shot-1.png" alt="..."> using your App Store screenshots -->
+            <figure><div class="frame">Screenshot: a strike landing on a swarm</div><figcaption>Every strike lands where it hits the most enemies.</figcaption></figure>
+            <figure><div class="frame">Screenshot: the processor mid-chain</div><figcaption>Your processor holds five orbs, with five more in reserve.</figcaption></figure>
+            <figure><div class="frame">Screenshot: a Mod pick</div><figcaption>Each level-up offers three Mods to pick from.</figcaption></figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" aria-labelledby="ways">
+        <div class="wrap split">
+          <div>
+            <h2 id="ways">Play your way</h2>
+          </div>
+          <div>
+            <p>Every option is in Settings, on the home screen and in the pause menu, and applies at once. Text size and Reduced motion start from your iPhone's own settings.</p>
+            <ul class="options">
+              <li><strong>Text size up to 200%</strong><span>Menus, cards and dialogue grow and reflow instead of shrinking to fit.</span></li>
+              <li><strong>Reduced motion</strong><span>No screen shake, camera zooms or bobbing. The game plays the same.</span></li>
+              <li><strong>Flashing effects, screen shake and haptics</strong><span>Each one switches off on its own. Nothing flashes more than three times a second.</span></li>
+              <li><strong>Visual cues</strong><span>Numbers on the health and XP bars, and icons on buttons, so nothing relies on colour alone.</span></li>
+              <li><strong>Contrast outline and contrast filter</strong><span>Characters stand out from the sand.</span></li>
+              <li><strong>Spider filter</strong><span>Spiders are drawn as plain shapes. They behave the same.</span></li>
+              <li><strong>Camera zoom</strong><span>Brings the view closer for a bigger picture.</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" aria-labelledby="details">
+        <div class="wrap split">
+          <div>
+            <h2 id="details">Details</h2>
+          </div>
+          <dl class="facts">
+            <dt>Device</dt><dd>iPhone, played in landscape</dd>
+            <dt>Requires</dt><dd>iOS 15 or later</dd>
+            <dt>Price</dt><dd>Free, no in-app purchases, no ads</dd>
+            <dt>Account</dt><dd>None needed</dd>
+            <dt>Internet</dt><dd>Not needed to play</dd>
+            <dt>Age rating</dt><dd>13+</dd>
+            <dt>Help</dt><dd><a href="support.html">Support and questions</a></dd>
+          </dl>
+        </div>
+      </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <p>© 2026 Brandon Nathan Haliman. Made by Gamekanya Studio.</p>
+      <nav aria-label="Footer">
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy policy</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/chain.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+/* Ataraxia website. Colours are the game's Apollo palette; Pixelify Sans is the game's title font. */
+
+@font-face {
+  font-family: "Pixelify Sans";
+  src: url("fonts/PixelifySans.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("fonts/atkinson-hyperlegible-latin-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --night: #172038;   /* sky and page */
+  --deep: #253a5e;    /* panels */
+  --slate: #394a50;   /* quiet panels, rules */
+  --sand: #c8925a;    /* arena ground */
+  --sand-dark: #ae7541;
+  --crystal: #73bed3; /* number orbs, links */
+  --operator: #df84a5;/* operator orbs */
+  --gold: #e8c170;    /* results, strike */
+  --text: #ebede9;
+  --muted: #a8b5b2;
+
+  --display: "Pixelify Sans", ui-monospace, monospace;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+
+  --measure: 38rem;
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.3rem;
+  --step-2: 1.7rem;
+  --step-3: 2.4rem;
+  --step-4: clamp(3.2rem, 9vw, 6.5rem);
+  --notch: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--night); color: var(--text); }
+
+body {
+  margin: 0;
+  font-family: var(--body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+img.pixel { image-rendering: pixelated; }
+
+a { color: var(--crystal); text-underline-offset: 0.18em; }
+a:hover { color: var(--text); }
+
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  background: var(--gold);
+  color: var(--night);
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  z-index: 10;
+}
+.skip:focus { top: 1rem; }
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+}
+h2 { font-size: var(--step-3); }
+h3 { font-size: var(--step-1); }
+
+p { margin: 0 0 1em; }
+
+.wrap {
+  width: min(100% - 2.5rem, 68rem);
+  margin-inline: auto;
+}
+
+/* Notched pixel corners, the same cut the game's UI frames use */
+.notched {
+  clip-path: polygon(
+    var(--notch) 0, calc(100% - var(--notch)) 0, 100% var(--notch),
+    100% calc(100% - var(--notch)), calc(100% - var(--notch)) 100%,
+    var(--notch) 100%, 0 calc(100% - var(--notch)), 0 var(--notch));
+}
+
+/* ---------- Top bar ---------- */
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.1rem;
+}
+.bar .home {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--display);
+  font-size: var(--step-1);
+  color: var(--text);
+  text-decoration: none;
+}
+.bar .home img { width: 36px; height: 36px; border-radius: 8px; }
+.bar nav { display: flex; gap: 1.4rem; }
+.bar nav a { color: var(--muted); text-decoration: none; font-weight: 700; }
+.bar nav a:hover, .bar nav a[aria-current="page"] { color: var(--text); }
+.bar nav a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--gold); text-decoration-thickness: 2px; }
+
+/* ---------- Landing: sky over sand ---------- */
+
+.sky {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(2px 2px at 12% 18%, var(--text) 50%, transparent 51%),
+    radial-gradient(2px 2px at 27% 52%, var(--muted) 50%, transparent 51%),
+    radial-gradient(2px 2px at 41% 12%, var(--text) 50%, transparent 51%),
+    radial-gradient(2px 2px at 63% 34%, var(--muted) 50%, transparent 51%),
+    radial-gradient(2px 2px at 78% 9%, var(--text) 50%, transparent 51%),
+    radial-gradient(2px 2px at 88% 46%, var(--muted) 50%, transparent 51%),
+    radial-gradient(2px 2px at 54% 61%, var(--text) 50%, transparent 51%),
+    var(--night);
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  gap: 2.5rem 3rem;
+  align-items: end;
+  padding-block: 4rem 0;
+}
+
+.hero h1 {
+  font-size: var(--step-4);
+  letter-spacing: 0.01em;
+}
+.hero .lede {
+  font-size: var(--step-1);
+  max-width: 30rem;
+  margin-top: 1rem;
+  color: var(--text);
+}
+.hero .facts-line { color: var(--muted); margin-top: 0.5rem; }
+
+.store {
+  display: inline-block;
+  margin-top: 1.6rem;
+  padding: 0.85rem 1.3rem;
+  background: var(--gold);
+  color: var(--night);
+  font-weight: 700;
+  text-decoration: none;
+}
+.store[aria-disabled="true"] { background: var(--slate); color: var(--text); cursor: default; }
+
+.ship {
+  position: absolute;
+  top: 0.5rem;
+  right: -240px;
+  width: 223px;
+  animation: cross 26s linear 0.6s 1 forwards;
+}
+@keyframes cross {
+  to { transform: translateX(calc(-100vw - 260px)); }
+}
+
+/* The dune: a stepped pixel edge between sky and ground */
+.ground {
+  height: 64px;
+  margin-top: 3rem;
+  margin-bottom: -1px;   /* no hairline seam against the sand section below */
+  background: var(--sand);
+  clip-path: polygon(0 40%, 8% 40%, 8% 25%, 19% 25%, 19% 10%, 34% 10%, 34% 30%, 47% 30%, 47% 15%, 61% 15%, 61% 0, 76% 0, 76% 22%, 90% 22%, 90% 38%, 100% 38%, 100% 100%, 0 100%);
+}
+
+/* ---------- The processor demo ---------- */
+
+.processor {
+  background: var(--deep);
+  padding: 1.4rem 1.4rem 1.2rem;
+  margin-bottom: -2rem;
+  position: relative;
+  z-index: 1;
+}
+.processor h2 { font-size: var(--step-1); }
+.processor p.hint { color: var(--muted); font-size: var(--step--1); margin: 0.35rem 0 1rem; }
+
+.chain {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.orb {
+  width: 3.4rem;
+  height: 3.4rem;
+  border: 0;
+  border-radius: 50%;
+  font-family: var(--body);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #140f1a;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 3px #0d0b14, inset 0 -6px 0 rgba(0, 0, 0, 0.18);
+}
+.orb.number { background: var(--crystal); }
+.orb.operator { background: var(--operator); width: 2.8rem; height: 2.8rem; font-size: 1.4rem; }
+.orb:active { transform: translateY(2px); }
+
+.result {
+  margin: 1.1rem 0 0;
+  font-weight: 700;
+  font-size: var(--step-2);
+  line-height: 1.2;
+  color: var(--gold);
+}
+.result small {
+  display: block;
+  font-weight: 400;
+  margin-top: 0.2rem;
+  font-family: var(--body);
+  font-size: var(--step--1);
+  color: var(--text);
+}
+
+/* ---------- Sections on the ground ---------- */
+
+.field { background: var(--sand); color: #1a1420; padding-block: 4.5rem 4rem; }
+.field a { color: #1a1420; }
+.field h2 { color: #1a1420; }
+
+.run {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+  counter-reset: step;
+}
+.run li {
+  counter-increment: step;
+  border-top: 4px solid #1a1420;
+  padding-top: 0.8rem;
+}
+.run li::before {
+  content: counter(step);
+  font-weight: 700;
+  font-size: var(--step-2);
+  display: block;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.run h3 { font-size: var(--step-0); font-family: var(--body); font-weight: 700; margin-bottom: 0.3rem; }
+.run p { font-size: var(--step--1); margin: 0; }
+
+.shots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+.shots figure { margin: 0; }
+.shots .frame {
+  aspect-ratio: 2622 / 1206;
+  background: var(--sand-dark);
+  border: 4px solid #1a1420;
+  display: grid;
+  place-items: center;
+  font-size: var(--step--1);
+  text-align: center;
+  padding: 0.5rem;
+}
+.shots img { width: 100%; height: auto; display: block; border: 4px solid #1a1420; }
+.shots figcaption { font-size: var(--step--1); margin-top: 0.4rem; }
+
+/* ---------- Night sections ---------- */
+
+.band { padding-block: 4.5rem; }
+.band + .band { border-top: 4px solid var(--slate); }
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+  gap: 1.5rem 3rem;
+}
+.split > div > p:first-child { margin-top: 0.3rem; }
+
+.options { list-style: none; padding: 0; margin: 0; }
+.options li {
+  padding: 0.9rem 0;
+  border-bottom: 2px solid var(--slate);
+}
+.options li:first-child { padding-top: 0; }
+.options strong { display: block; font-size: var(--step-0); }
+.options span { color: var(--muted); }
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.55rem 2rem;
+  margin: 0;
+}
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; font-weight: 700; }
+
+/* ---------- Reading pages (privacy, support) ---------- */
+
+.page { padding-block: 3rem 5rem; }
+.page header { max-width: var(--measure); margin-bottom: 2.5rem; }
+.page h1 { font-size: var(--step-3); margin-bottom: 0.6rem; }
+.page .updated { color: var(--muted); }
+.prose { max-width: var(--measure); }
+.prose h2 { font-size: var(--step-1); margin: 2.4rem 0 0.7rem; color: var(--gold); }
+.prose ul { padding-left: 1.2rem; margin: 0 0 1em; }
+.prose li { margin-bottom: 0.4rem; }
+
+.contact {
+  background: var(--deep);
+  padding: 1.3rem 1.4rem;
+  margin: 0 0 2.5rem;
+  max-width: var(--measure);
+}
+.contact p { margin: 0; }
+.contact a { font-weight: 700; font-size: var(--step-1); }
+
+details {
+  border-bottom: 2px solid var(--slate);
+  max-width: var(--measure);
+}
+summary {
+  cursor: pointer;
+  padding: 1rem 0;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after {
+  content: "+";
+  font-family: var(--display);
+  color: var(--crystal);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+details[open] summary::after { content: "\2212"; }
+details > div { padding-bottom: 1rem; }
+
+/* ---------- Footer ---------- */
+
+.foot {
+  border-top: 4px solid var(--slate);
+  padding-block: 2rem 2.5rem;
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+.foot nav { display: flex; gap: 1.4rem; }
+.foot a { color: var(--muted); }
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; padding-top: 2rem; }
+  .run { grid-template-columns: 1fr 1fr; }
+  .shots { grid-template-columns: 1fr; }
+  .split { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .run { grid-template-columns: 1fr; }
+  .bar nav { gap: 1rem; }
+  .orb { width: 3rem; height: 3rem; }
+  .orb.operator { width: 2.5rem; height: 2.5rem; }
+}
+
+@media (max-width: 600px) {
+  .ship { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ship { animation: none; right: 4%; }
+  .orb:active { transform: none; }
+}
+
+/* Long addresses (the support email) wrap instead of overflowing on narrow phones. */
+a[href^="mailto:"] { overflow-wrap: anywhere; }
