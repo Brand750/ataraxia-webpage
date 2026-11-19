@@ -36,19 +36,34 @@
                <a class="store notched" href="[App Store link]">Download on the App Store</a> -->
           <span class="store notched" aria-disabled="true">Coming soon to the App Store</span>
         </div>
+      </section>
 
-        <div class="processor notched" aria-labelledby="try">
+      <section class="wrap demo" aria-labelledby="try">
+        <div class="demo-head">
           <h2 id="try">Try a chain</h2>
-          <p class="hint">Tap an orb to change it. The sum is worked out left to right, like a calculator.</p>
-          <div class="chain" id="chain">
-            <button class="orb number" type="button" data-kind="number" data-value="7" aria-label="Number 7">7</button>
-            <button class="orb operator" type="button" data-kind="operator" data-value="×" aria-label="Times">×</button>
-            <button class="orb number" type="button" data-kind="number" data-value="3" aria-label="Number 3">3</button>
-            <button class="orb operator" type="button" data-kind="operator" data-value="+" aria-label="Plus">+</button>
-            <button class="orb number" type="button" data-kind="number" data-value="4" aria-label="Number 4">4</button>
-          </div>
-          <p class="result" id="result" aria-live="polite">25 damage<small>A tier 2 strike: a wider blast.</small></p>
+          <p>Drag from a number, through an operator, to a number. Let go to strike.</p>
         </div>
+        <div class="arena notched" id="arena">
+          <div class="foes" aria-hidden="true"><div class="oreivax"></div></div>
+          <div class="fx" aria-hidden="true"><svg class="fx-svg"></svg></div>
+          <p class="crystals" aria-hidden="true"><b>0</b></p>
+          <div class="readout">
+            <p class="eq" aria-hidden="true"></p>
+            <p class="mix" aria-hidden="true"></p>
+            <button class="fire" type="button" hidden>Strike</button>
+          </div>
+          <div class="reserve"><span class="reserve-label" aria-hidden="true">Reserve</span><span class="reserve-orbs" role="img"></span></div>
+          <div class="proc" role="group" aria-label="Processor">
+            <svg viewBox="0 0 100 100" aria-hidden="true"></svg>
+            <button class="slot" type="button" data-i="0"></button>
+            <button class="slot" type="button" data-i="1"></button>
+            <button class="slot" type="button" data-i="2"></button>
+            <button class="slot" type="button" data-i="3"></button>
+            <button class="slot" type="button" data-i="4"></button>
+          </div>
+        </div>
+        <p class="legend"><span class="heat">Heat</span> burns, <span class="wind">Wind</span> pulls, <span class="electric">Electric</span> stuns. Mix them in one chain.</p>
+        <p class="visually-hidden" id="announce" aria-live="polite"></p>
       </section>
       <div class="ground" aria-hidden="true"></div>
     </div>
@@ -65,10 +80,10 @@
           </ol>
 
           <div class="shots">
-            <!-- Replace each .frame div with <img src="assets/img/shot-1.png" alt="..."> using your App Store screenshots -->
-            <figure><div class="frame">Screenshot: a strike landing on a swarm</div><figcaption>Every strike lands where it hits the most enemies.</figcaption></figure>
-            <figure><div class="frame">Screenshot: the processor mid-chain</div><figcaption>Your processor holds five orbs, with five more in reserve.</figcaption></figure>
-            <figure><div class="frame">Screenshot: a Mod pick</div><figcaption>Each level-up offers three Mods to pick from.</figcaption></figure>
+            <figure><img src="assets/img/shot-chain.webp" alt="Oreivax faces a swarm in the desert while the processor shows the chain 7 times 6 equals 42." width="2000" height="921" loading="lazy"><figcaption>Chain 7 × 6 and a 42-damage strike lands on the swarm.</figcaption></figure>
+            <figure><img src="assets/img/shot-meltdown.webp" alt="Three Heat orbs make a Meltdown: a ring of fire with 79 damage numbers stacked over the enemies." width="2000" height="921" loading="lazy"><figcaption>Three Heat orbs make a Meltdown.</figcaption></figure>
+            <figure><img src="assets/img/shot-boss.webp" alt="A giant sand worm boss rises from the dunes beside Oreivax." width="2000" height="921" loading="lazy"><figcaption>Bosses wait at the end of the planet.</figcaption></figure>
+            <figure><img src="assets/img/shot-title.webp" alt="The Ataraxia title screen: a pixel planet, New Run and Settings buttons." width="2000" height="921" loading="lazy"><figcaption>Gather the light crystals, region by region.</figcaption></figure>
           </div>
         </div>
       </section>
@@ -79,15 +94,15 @@
             <h2 id="ways">Play your way</h2>
           </div>
           <div>
-            <p>Every option is in Settings, on the home screen and in the pause menu, and applies at once. Text size and Reduced motion start from your iPhone's own settings.</p>
-            <ul class="options">
-              <li><strong>Text size up to 200%</strong><span>Menus, cards and dialogue grow and reflow instead of shrinking to fit.</span></li>
-              <li><strong>Reduced motion</strong><span>No screen shake, camera zooms or bobbing. The game plays the same.</span></li>
-              <li><strong>Flashing effects, screen shake and haptics</strong><span>Each one switches off on its own. Nothing flashes more than three times a second.</span></li>
-              <li><strong>Visual cues</strong><span>Numbers on the health and XP bars, and icons on buttons, so nothing relies on colour alone.</span></li>
-              <li><strong>Contrast outline and contrast filter</strong><span>Characters stand out from the sand.</span></li>
-              <li><strong>Spider filter</strong><span>Spiders are drawn as plain shapes. They behave the same.</span></li>
-              <li><strong>Camera zoom</strong><span>Brings the view closer for a bigger picture.</span></li>
+            <p class="ways-note">All in Settings, applied at once.</p>
+            <ul class="chips">
+              <li>Text size up to 200%</li>
+              <li>Reduced motion</li>
+              <li>Flashing, shake and haptics off</li>
+              <li>Visual cues, not colour alone</li>
+              <li>Contrast outline and filter</li>
+              <li>Spider filter</li>
+              <li>Camera zoom</li>
             </ul>
           </div>
         </div>
