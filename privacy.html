@@ -23,36 +23,41 @@
   <main id="main" class="wrap page">
     <header>
       <h1>Privacy policy</h1>
-      <p class="updated">Last updated 18 November 2026</p>
+      <p class="updated">Last updated 19 November 2026</p>
     </header>
 
     <div class="prose">
-      <p>Ataraxia is a game for iPhone made by Gamekanya Studio. This page explains what the game does with your information. In short: there is no account, no advertising and no tracking. The only information that leaves your iPhone is anonymous crash and performance data, so we can find and fix problems.</p>
-
-      <h2>What leaves your iPhone</h2>
-      <p>The game uses Unity's diagnostics service, run by Unity Technologies, the maker of the engine the game is built with. When the game crashes, stops responding or runs badly, it sends Unity:</p>
-      <ul>
-        <li>crash logs and error reports</li>
-        <li>performance data, such as frame rate and memory use</li>
-        <li>basic device details, such as the iPhone model and iOS version</li>
-        <li>a random installation ID, so reports from the same install can be grouped</li>
-      </ul>
-      <p>This data is not linked to your name, email or Apple ID. It is not used for advertising or to track you across other apps or websites, and it is not sold. Unity keeps it for up to 90 days. Unity's own policy is at <a href="https://unity.com/legal/game-player-and-app-user-privacy-policy">unity.com/legal/game-player-and-app-user-privacy-policy</a>.</p>
+      <p>Ataraxia is a free game for iPhone made by Gamekanya Studio. It has no ads, no in-app purchases and no account, and it plays offline. This page explains what the game does with your information. In short: your progress stays on your iPhone, and the game sends anonymous gameplay statistics so we can see how it is played and make it better. You can turn the statistics off at any time.</p>
 
       <h2>What stays on your iPhone</h2>
-      <p>Your game progress and your settings are saved on your iPhone so you can carry on where you left off. They never leave the device and we cannot see them. To erase them, open Settings in the game, go to Data and choose Reset progress, or delete the app.</p>
+      <p>Your game progress and your settings are saved on your iPhone so you can carry on where you left off. They never leave the device and we can't see them. To erase them, open Settings in the game, go to the Data tab and choose Reset progress, or delete the app.</p>
+
+      <h2>What leaves your iPhone</h2>
+      <p>Unless you turn it off, the game sends anonymous gameplay statistics to PostHog, an analytics service run by PostHog, Inc. The statistics are stored on PostHog's servers in the United States. We use them to understand how people play and to improve the game. The game sends:</p>
+      <ul>
+        <li>what happens in the game: starting a run, starting and clearing a region, the wave you reach, a boss appearing and being defeated, picking a Mod, dying, retrying, opening the Workshop, starting and finishing the tutorial, opening the game, and how long you play</li>
+        <li>the game's version and build number, that it runs on iPhone, and whether you are in the tutorial</li>
+        <li>a random ID made for your install of the game, so events from the same install can be grouped</li>
+      </ul>
+      <p>The random ID is not your iPhone's advertising identifier (IDFA). It is not linked to your name, email, Apple ID or any account. If you play offline, the statistics wait on your iPhone and are sent the next time you open the game while online.</p>
+      <!-- REMINDER: before release, confirm that "Discard client IP data" is ON and GeoIP is OFF in the PostHog project settings. The next sentence is only true once both are set. -->
+      <p>PostHog is set to throw away your IP address (your connection's internet address) when the statistics arrive, so no location is stored.</p>
+      <p>PostHog keeps the statistics for 1 year.</p>
+      <p>PostHog's own policy is at <a href="https://posthog.com/privacy">posthog.com/privacy</a>.</p>
 
       <h2>What we don't collect</h2>
-      <p>We don't ask for or collect your name, email, contacts, location, photos, microphone, camera or any other personal information. The game has no sign-in, no chat, no in-app purchases and no ads.</p>
+      <p>The game doesn't collect your name, email, contacts, location, photos or advertising identifier. There is no screen recording, no profile of you and no tracking across other apps or websites. We don't sell your data or share it for advertising.</p>
 
       <h2>Your choices</h2>
-      <p>You can ask us to delete the diagnostics data for your installation, or ask any question about this policy, by emailing <a href="mailto:ataraxia.conquest@gmail.com">ataraxia.conquest@gmail.com</a>.</p>
+      <p>Sharing statistics is on when you first install the game. To turn it off, open Settings in the game, go to the Data tab and turn off Share anonymous usage data. Once it's off, nothing more is sent. You can turn it back on at any time.</p>
+      <p>Because the statistics are anonymous, we can't tell which data belongs to which player, so we can't find or delete a particular player's data. Deleting the app removes the random ID, so anything sent after you reinstall can't be linked to what was sent before.</p>
+      <p>If you have a question about this policy, email <a href="mailto:ataraxia.conquest@gmail.com">ataraxia.conquest@gmail.com</a>.</p>
 
       <h2>Children</h2>
-      <p>Ataraxia is rated 13+ on the App Store. We don't knowingly collect personal information from anyone, including children.</p>
+      <p>Ataraxia is rated 13+ on the App Store and is not made for children under 13.</p>
 
       <h2>Changes to this policy</h2>
-      <p>If what the game collects ever changes, we will update this page and the date at the top before releasing the version that changes it.</p>
+      <p>Before we release a version of the game that collects anything new, we will update this page and the date at the top.</p>
 
       <h2>Contact</h2>
       <p>Gamekanya Studio<br><a href="mailto:ataraxia.conquest@gmail.com">ataraxia.conquest@gmail.com</a></p>
