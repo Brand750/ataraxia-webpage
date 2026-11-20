@@ -1,7 +1,9 @@
 // "Try a chain": a small playable copy of the game's processor and air strike.
-// Processor: 5 slots (0, 2, 3 take numbers; 1 and 4 take operators) and a 5-orb Reserve that refills empty slots
-// after a strike. Start on a number, alternate number/operator, step back to undo, let go to strike; a trailing
-// operator is dropped. The sum is worked left to right. Strikes grow at 20 and 82 and land on the thickest group.
+// Rules follow the game: Processor (5 typed slots: 0, 2, 3 numbers, 1 and 4 operators; a 5-orb Reserve that refills
+// matching slots after a cast), ProcessorView (start on a number, alternate number/operator, step back to undo,
+// release to cast; a trailing operator is dropped), OperationEvaluator (left to right, rounded down), AirStrike
+// (tiers at 1, 20 and 82; lands where it covers the most enemies) and the orb elements (Heat, Wind, Electric; an
+// elemental number is 1 to 5; 1 elemental number = a single effect, 2 or 3 = a mix, plain numbers are skipped).
 (function () {
   "use strict";
 
@@ -13,9 +15,11 @@
   var slotEls = proc.querySelectorAll(".slot");
   var reserveEl = arena.querySelector(".reserve-orbs");
   var eqEl = arena.querySelector(".eq");
+  var mixEl = arena.querySelector(".mix");
   var fireBtn = arena.querySelector(".fire");
   var foeLayer = arena.querySelector(".foes");
   var fxLayer = arena.querySelector(".fx");
+  var fxSvg = arena.querySelector(".fx-svg");
   var hero = arena.querySelector(".oreivax");
   var crystalsEl = arena.querySelector(".crystals b");
   var announce = document.getElementById("announce");
@@ -25,18 +29,48 @@
 
   var SLOT_KIND = ["n", "o", "n", "n", "o"];
   var RESERVE_CAP = 5;
+  var ELEMENTS = {
+    A: { name: "Heat", color: "#ff7a1a", cls: "heat" },
+    B: { name: "Wind", color: "#7fe3c4", cls: "wind" },
+    C: { name: "Electric", color: "#ffe14d", cls: "electric" }
+  };
   var OP_NAMES = { "+": "plus", "×": "times" };
   var TIERS = [1, 20, 82];
 
-  function num(v) { return { kind: "n", v: v }; }
-  function op(s) { return { kind: "o", v: s }; }
+  // The game's mix table (EffectDefaults v8), trimmed to what the demo can show
+  var MIXES = {
+    A: { name: "Ember", blurb: "small burn", burn: 15, burnS: 2.5 },
+    B: { name: "Breeze", blurb: "small slow", slow: 25, slowS: 1.5 },
+    C: { name: "Static", blurb: "short stun", stun: 0.6 },
+    AA: { name: "Scorch", blurb: "burn", burn: 30, burnS: 3 },
+    BB: { name: "Gust", blurb: "pull, slow", well: 0.4, wellR: 1, slow: 35, slowS: 1.75 },
+    CC: { name: "Jolt", blurb: "stun", stun: 1.4 },
+    AAA: { name: "Meltdown", blurb: "huge long burn, burning foes explode", ult: true, burn: 120, burnS: 4, burst: 20, blast: 20, blastR: 1.3 },
+    BBB: { name: "Cyclone", blurb: "giant pull, a crushing blast", ult: true, well: 1.2, wellR: 2.6, slow: 85, slowS: 5, blast: 20, blastR: 1.2 },
+    CCC: { name: "Overload", blurb: "long stun, big chain", ult: true, stun: 3.5, jumps: 10, range: 1.8, chainPct: 8, chainStun: 2, blast: 20, blastR: 1.3, blastStun: 2 },
+    AB: { name: "Fire whirl", blurb: "pull into fire", zone: 1.5, zoneR: 1, zoneBurn: 22 },
+    AAB: { name: "Furnace", blurb: "pull into long fire", zone: 3.5, zoneR: 1, zoneBurn: 42 },
+    ABB: { name: "Firestorm", blurb: "wide, long pull into fire", zone: 3, zoneR: 1.5, zoneBurn: 22 },
+    AC: { name: "Ignite", blurb: "chain, burn", burn: 18, burnS: 3, jumps: 2, chainPct: 5, chainStun: 0.9 },
+    AAC: { name: "Arc fire", blurb: "chain, hot burn", burn: 35, burnS: 3, jumps: 3, chainPct: 5, chainStun: 0.9 },
+    ACC: { name: "Short circuit", blurb: "long chain, long stun, burn", burn: 18, burnS: 3, stun: 1.6, jumps: 4, chainPct: 5, chainStun: 1.6 },
+    BC: { name: "Storm trap", blurb: "pull, then stun", well: 1, wellR: 1, stun: 1.4 },
+    BBC: { name: "Gale trap", blurb: "wide pull, then stun", well: 1, wellR: 1.5, stun: 1.4 },
+    BCC: { name: "Lockdown", blurb: "pull, long stun, chain", well: 1, wellR: 1, stun: 2, jumps: 3, chainPct: 5, chainStun: 1.4 },
+    ABC: { name: "Supernova", blurb: "pull, strike, second blast", well: 1, wellR: 1.2, blast: 10, blastR: 1, blastStun: 1.4, blastBurn: 18 }
+  };
+
+  function num(v, el) { return { kind: "n", v: v, el: el || null }; }
+  function op(s) { return { kind: "o", v: s, el: null }; }
+
+  function apply(a, o, b) {
+    return o === "+" ? a + b : a * b;
+  }
 
   function evaluate(orbs) {
     var t = orbs[0].v;
-    for (var i = 1; i < orbs.length - 1; i += 2) {
-      t = orbs[i].v === "+" ? t + orbs[i + 1].v : t * orbs[i + 1].v;
-    }
-    return t;
+    for (var i = 1; i < orbs.length - 1; i += 2) t = apply(t, orbs[i].v, orbs[i + 1].v);
+    return Math.floor(t);
   }
 
   function isValid(orbs) {
@@ -45,24 +79,59 @@
     return true;
   }
 
+  function mixKey(orbs) {
+    var codes = [];
+    orbs.forEach(function (o) { if (o.kind === "n" && o.el) codes.push(o.el); });
+    if (codes.length === 0 || codes.length > 3) return "";
+    return codes.sort().join("");
+  }
+
+  function hitDamage(r, pct) { return Math.max(Math.round(r * pct / 100), 1); }
+
   function tierOf(r) {
     var t = 1;
     for (var i = 0; i < TIERS.length; i++) if (r >= TIERS[i]) t = i + 1;
     return t;
   }
 
+  function mixColors(key) {
+    var seen = [];
+    key.split("").forEach(function (c) { if (seen.indexOf(c) < 0) seen.push(c); });
+    return seen.map(function (c) { return ELEMENTS[c].color; });
+  }
+
+  function leadColor(key) {
+    if (!key) return "#73bed3";
+    var best = key[0], n = 0;
+    "ABC".split("").forEach(function (c) {
+      var k = key.split(c).length - 1;
+      if (k > n) { n = k; best = c; }
+    });
+    return ELEMENTS[best].color;
+  }
+
   // ---------- Processor state ----------
 
-  var slots = [num(3), op("×"), num(4), num(5), op("+")];
-  var reserve = [num(6), op("+"), num(2), op("×"), num(8)];
+  // Opens on a Meltdown in waiting: three Heat numbers
+  var slots = [num(3, "A"), op("×"), num(4, "A"), num(5, "A"), op("+")];
+  var reserve = [num(6), op("+"), num(2, "B"), op("×"), num(8)];
   var chain = [];
   var dragging = false;
   var pending = null;   // pointer down, not yet a drag
   var live = null;      // the line that follows the finger, in processor %
 
   function randomOrb(kind) {
-    if (kind === "o") return op(Math.random() < 0.5 ? "+" : "×");
-    return num(1 + Math.floor(Math.random() * 9));
+    if (kind === "o") {
+      var r = Math.random();
+      return op(r < 0.5 ? "+" : "×");
+    }
+    var v = 1 + Math.floor(Math.random() * 9);
+    if (Math.random() < 0.38) {
+      var el = "ABC"[Math.floor(Math.random() * 3)];
+      if (v > 5) v = 1 + Math.floor(Math.random() * 5);   // ElementRules.ElementalNumber: elements trade away big numbers
+      return num(v, el);
+    }
+    return num(v);
   }
 
   function freeSlot(kind) {
@@ -133,11 +202,13 @@
     live = null;
     if (!isValid(orbs)) { render(); return; }
     var result = evaluate(orbs);
+    var key = mixKey(orbs);
     used.forEach(function (i) { slots[i] = null; });
     refillFromReserve();
     render();
-    strike(result);
-    say(result + " damage.");
+    strike(result, key);
+    var mix = MIXES[key];
+    say((result < 1 ? "A weak strike" : result + " damage") + (mix ? ", " + mix.name + ": " + mix.blurb : "") + ".");
   }
 
   function say(text) {
@@ -157,10 +228,13 @@
   var ringPath = document.createElementNS(NS, "polygon");
   ringPath.setAttribute("class", "track");
   ringPath.setAttribute("points", CENTERS.map(function (c) { return c.x + "," + c.y; }).join(" "));
+  var ringShadow = ringPath.cloneNode();
+  ringShadow.setAttribute("class", "track-shadow");
   var links = document.createElementNS(NS, "polyline");
   links.setAttribute("class", "links");
   var liveLine = document.createElementNS(NS, "line");
   liveLine.setAttribute("class", "links live");
+  svg.appendChild(ringShadow);
   svg.appendChild(ringPath);
   svg.appendChild(links);
   svg.appendChild(liveLine);
@@ -171,23 +245,31 @@
   });
 
   function orbLabel(o) {
-    return o.kind === "o" ? OP_NAMES[o.v] : String(o.v);
+    if (o.kind === "o") return OP_NAMES[o.v];
+    return "number " + o.v + (o.el ? ", " + ELEMENTS[o.el].name : "");
   }
 
   function paintOrb(el, o, extra) {
-    el.className = extra + " " + (!o ? "empty" : o.kind === "n" ? "number" : "operator");
+    var cls = [extra];
+    if (!o) cls.push("empty");
+    else {
+      cls.push(o.kind === "n" ? "number" : "operator");
+      if (o.el) cls.push("el", ELEMENTS[o.el].cls);
+    }
+    el.className = cls.join(" ");
     el.textContent = o ? o.v : "";
   }
 
   function render() {
     var orbs = chainOrbs();
     var valid = isValid(orbs);
+    var key = valid ? mixKey(orbs) : "";
 
     slotEls.forEach(function (el, i) {
       var o = slots[i];
       var sel = chain.indexOf(i) >= 0;
       paintOrb(el, o, "slot " + (SLOT_KIND[i] === "n" ? "kind-n" : "kind-o") + (sel ? " sel" : ""));
-      if (arrived["s" + i]) el.classList.add("arrive");
+      if (arrived["s" + i]) { el.classList.add("arrive"); }
       el.setAttribute("aria-label", o ? orbLabel(o) : "empty " + (SLOT_KIND[i] === "n" ? "number" : "operator") + " slot");
       el.setAttribute("aria-pressed", sel ? "true" : "false");
       el.disabled = !o;
@@ -203,20 +285,44 @@
     reserveEl.setAttribute("aria-label", "Reserve: " + (reserve.length ? reserve.map(orbLabel).join(", ") : "empty"));
     arrived = {};
 
+    // Chain lines: blue, or the mix's lead colour while a mix is held
+    var lc = key ? leadColor(key) : "#73bed3";
     links.setAttribute("points", chain.map(function (i) { return CENTERS[i].x + "," + CENTERS[i].y; }).join(" "));
+    links.style.stroke = lc;
     if (live && chain.length) {
       var last = CENTERS[chain[chain.length - 1]];
       liveLine.setAttribute("x1", last.x); liveLine.setAttribute("y1", last.y);
       liveLine.setAttribute("x2", live.x); liveLine.setAttribute("y2", live.y);
+      liveLine.style.stroke = lc;
       liveLine.style.display = "";
     } else liveLine.style.display = "none";
 
-    // Readout: "3 × 4 + 5 = 17"
+    // Readout: "3 × 4 + 5 = 17" and the mix it makes
     if (orbs.length) {
       var text = orbs.map(function (o) { return o.v; }).join(" ");
       if (valid) text += " = " + evaluate(orbs);
       eqEl.textContent = text;
     } else eqEl.textContent = "";
+
+    var mix = key && MIXES[key];
+    if (mix) {
+      var cols = mixColors(key);
+      mixEl.innerHTML = "";
+      var b = document.createElement("b");
+      b.textContent = mix.name;
+      b.style.backgroundImage = "linear-gradient(90deg, " + (cols.length > 1 ? cols.join(", ") : cols[0] + ", " + cols[0]) + ")";
+      var s = document.createElement("span");
+      s.textContent = mix.blurb;
+      mixEl.appendChild(b);
+      mixEl.appendChild(s);
+      proc.style.setProperty("--charge", leadColor(key));
+      proc.classList.toggle("ult", !!mix.ult);
+    } else {
+      mixEl.textContent = "";
+      proc.classList.remove("ult");
+    }
+    proc.classList.toggle("charged", valid);
+    if (!valid) proc.style.removeProperty("--charge");
 
     fireBtn.hidden = dragging || chain.length === 0;
     fireBtn.disabled = !valid;
@@ -239,7 +345,8 @@
 
   proc.addEventListener("pointerdown", function (e) {
     if (e.button > 0 || pending || dragging) return;
-    var i = slotAt(toProc(e));
+    var p = toProc(e);
+    var i = slotAt(p);
     if (i < 0 || !slots[i]) return;
     e.preventDefault();
     pending = { id: e.pointerId, i: i, x: e.clientX, y: e.clientY };
@@ -290,6 +397,7 @@
 
   var W = 0, H = 0, E = 40;
   var foes = [];
+  var zones = [];
   var crystals = 0;
   var running = false;
   var lastT = 0;
@@ -307,8 +415,6 @@
     return x > pr.left - ar.left - E && y > pr.top - ar.top - E * 2.5;
   }
 
-  function near(a, b, d) { var dx = a.x - b.x, dy = a.y - b.y; return dx * dx + dy * dy < d * d; }
-
   function spawnFoe(anywhere) {
     var x, y, tries = 0;
     do {
@@ -325,16 +431,21 @@
     el.className = "foe";
     el.style.animationDelay = (-Math.random()).toFixed(2) + "s";
     foeLayer.appendChild(el);
-    var f = { x: x, y: y, hp: 14, el: el, dead: false, orbit: (Math.random() - 0.5) * 2 };
+    var f = { x: x, y: y, hp: 14, el: el, dead: false, orbit: (Math.random() - 0.5) * 2,
+              stunUntil: 0, slowUntil: 0, slowPct: 0, pull: null, burn: null, burst: 0, shownStun: false };
     foes.push(f);
     place(f);
     return f;
   }
 
+  function near(a, b, d) { var dx = a.x - b.x, dy = a.y - b.y; return dx * dx + dy * dy < d * d; }
+
   function place(f) {
     f.el.style.transform = "translate(" + f.x.toFixed(1) + "px," + f.y.toFixed(1) + "px)";
     f.el.style.zIndex = String(Math.round(f.y));
   }
+
+  function now() { return performance.now() / 1000; }
 
   function resize() {
     var r = arena.getBoundingClientRect();
@@ -356,6 +467,7 @@
     if (!running) return;
     var dt = Math.min((t - lastT) / 1000, 0.05);
     lastT = t;
+    var n = now();
     var p = player();
     var speed = Math.min(W, H * 2.17) * 0.028;
     var stop = E * 1.3;
@@ -369,15 +481,34 @@
 
     foes.forEach(function (f) {
       if (f.dead) return;
-      var vx = p.x - f.x, vy = p.y - f.y, dist = Math.hypot(vx, vy) || 1;
-      if (dist > stop) {
-        f.x += (vx / dist + (-vy / dist) * f.orbit * 0.35) * speed * dt;
-        f.y += (vy / dist + (vx / dist) * f.orbit * 0.35) * speed * dt;
-      } else {
-        // Circle Oreivax instead of piling onto him
-        f.x += (-vy / dist) * f.orbit * speed * 0.4 * dt;
-        f.y += (vx / dist) * f.orbit * speed * 0.4 * dt;
+      var stunned = n < f.stunUntil;
+      f.el.classList.toggle("stunned", stunned);
+      f.el.classList.toggle("slowed", !stunned && n < f.slowUntil);
+      if (f.pull && n < f.pull.until) {
+        var dx = f.pull.x - f.x, dy = f.pull.y - f.y, d = Math.hypot(dx, dy);
+        if (d > 3) { var m = Math.min(d, speed * 7 * dt); f.x += dx / d * m; f.y += dy / d * m; }
+      } else if (!stunned) {
+        f.pull = null;
+        var vx = p.x - f.x, vy = p.y - f.y, dist = Math.hypot(vx, vy) || 1;
+        var slow = n < f.slowUntil ? 1 - f.slowPct / 100 : 1;
+        if (dist > stop) {
+          f.x += (vx / dist + (-vy / dist) * f.orbit * 0.35) * speed * slow * dt;
+          f.y += (vy / dist + (vx / dist) * f.orbit * 0.35) * speed * slow * dt;
+        } else {
+          // Circle Oreivax instead of piling onto him
+          f.x += (-vy / dist) * f.orbit * speed * 0.4 * slow * dt;
+          f.y += (vx / dist) * f.orbit * speed * 0.4 * slow * dt;
+        }
       }
+      // Fire zones pull and burn
+      zones.forEach(function (z) {
+        if (n > z.until) return;
+        var zx = z.x - f.x, zy = z.y - f.y, zd = Math.hypot(zx, zy);
+        if (zd < z.r * 1.6 && zd > 4 && !(f.pull)) { f.x += zx / zd * speed * 2.2 * dt; f.y += zy / zd * speed * 2.2 * dt; }
+        if (zd < z.r && z.burned.indexOf(f) < 0) { z.burned.push(f); burn(f, z.dmg, z.burnS); }
+      });
+      if (f.burn) tickBurn(f, n);
+      if (f.dead) return;
       place(f);
     });
 
@@ -394,6 +525,7 @@
         }
       }
     }
+    zones = zones.filter(function (z) { return n <= z.until; });
     foes = foes.filter(function (f) { return !f.dead; });
     requestAnimationFrame(step);
   }
@@ -406,11 +538,11 @@
   }
   function stop() { running = false; }
 
-  // ---------- Damage ----------
+  // ---------- Damage and effects ----------
 
-  function pop(x, y, text) {
+  function pop(x, y, text, cls) {
     var el = document.createElement("div");
-    el.className = "pop";
+    el.className = "pop" + (cls ? " " + cls : "");
     el.textContent = text;
     el.style.left = x + "px";
     el.style.top = y + "px";
@@ -418,10 +550,10 @@
     el.addEventListener("animationend", function () { el.remove(); });
   }
 
-  function hurt(f, d) {
+  function hurt(f, d, cls) {
     if (f.dead) return;
     f.hp -= d;
-    pop(f.x + (Math.random() - 0.5) * E * 0.6, f.y - E * 0.45 + (Math.random() - 0.5) * E * 0.4, String(d));
+    pop(f.x + (Math.random() - 0.5) * E * 0.6, f.y - E * 0.45 + (Math.random() - 0.5) * E * 0.4, String(d), cls);
     if (f.hp <= 0) kill(f);
     else {
       f.el.classList.remove("hit");
@@ -436,26 +568,63 @@
     setTimeout(function () { f.el.remove(); }, 400);
     crystals += 1 + Math.floor(Math.random() * 3);
     crystalsEl.textContent = crystals;
+    // Meltdown: a burning foe that dies bursts
+    if (f.burst && f.burn) {
+      var around = foesNear(f, E * 2.2);
+      ring(f.x, f.y, E * 2.2, "#ff7a1a", "small");
+      setTimeout(function () { around.forEach(function (o) { hurt(o, f.burst, "burn"); }); }, 120);
+    }
   }
 
   function foesNear(c, r) {
     return foes.filter(function (f) { return !f.dead && near(f, c, r); });
   }
 
-  function ring(x, y, r, big) {
+  function burn(f, total, seconds, burst) {
+    if (f.dead || total <= 0) return;
+    var ticks = Math.max(Math.round(seconds / 0.5), 1);
+    f.burn = { per: total / ticks, left: ticks, next: now() + 0.5, acc: 0 };
+    if (burst) f.burst = burst;
+    f.el.classList.add("burning");
+  }
+
+  function tickBurn(f, n) {
+    if (n < f.burn.next) return;
+    f.burn.next += 0.5;
+    f.burn.left--;
+    f.burn.acc += f.burn.per;
+    var whole = Math.floor(f.burn.acc);
+    if (whole > 0) { f.burn.acc -= whole; hurt(f, whole, "burn"); }
+    if (!f.dead && f.burn && f.burn.left <= 0) { f.burn = null; f.el.classList.remove("burning"); }
+  }
+
+  function stun(f, s) {
+    if (f.dead || !s) return;
+    f.stunUntil = Math.max(f.stunUntil, now() + s);
+  }
+
+  function slow(f, pct, s) {
+    if (f.dead || !pct) return;
+    f.slowPct = Math.max(n0(f.slowUntil) ? 0 : f.slowPct, pct);
+    f.slowUntil = Math.max(f.slowUntil, now() + s);
+  }
+  function n0(until) { return now() > until; }
+
+  function ring(x, y, r, color, size) {
     var el = document.createElement("div");
-    el.className = "ring-fx" + (big ? " big" : "");
+    el.className = "ring-fx" + (size ? " " + size : "");
     el.style.left = x + "px";
     el.style.top = y + "px";
     el.style.width = el.style.height = (r * 2) + "px";
+    el.style.setProperty("--c", color);
     fxLayer.appendChild(el);
     el.addEventListener("animationend", function () { el.remove(); });
   }
 
-  function beam(x, y, r) {
+  function beam(x, y, r, key, ult) {
     var bw = Math.max(r * 1.25, E * 2);
     var el = document.createElement("div");
-    el.className = "beam";
+    el.className = "beam" + (key ? " tint-" + leadColor(key).slice(1) : "") + (ult ? " ult" : "");
     el.style.setProperty("--bw", bw.toFixed(1) + "px");
     el.style.left = (x - bw / 2) + "px";
     el.style.top = (y - bw * 2 * 0.8) + "px";
@@ -463,8 +632,27 @@
     el.addEventListener("animationend", function () { el.remove(); });
   }
 
+  function zigzag(points) {
+    var line = document.createElementNS(NS, "polyline");
+    var pts = [];
+    for (var i = 0; i < points.length - 1; i++) {
+      var a = points[i], b = points[i + 1];
+      for (var k = 0; k < 4; k++) {
+        var t = k / 4;
+        var j = k === 0 ? 0 : (Math.random() - 0.5) * E * 0.5;
+        pts.push((a.x + (b.x - a.x) * t + j).toFixed(1) + "," + (a.y + (b.y - a.y) * t + j).toFixed(1));
+      }
+    }
+    var last = points[points.length - 1];
+    pts.push(last.x.toFixed(1) + "," + last.y.toFixed(1));
+    line.setAttribute("points", pts.join(" "));
+    fxSvg.appendChild(line);
+    line.addEventListener("animationend", function () { line.remove(); });
+  }
+
   function strikeRadius(tier) {
-    return Math.min(W, H * 2.17) * [0.085, 0.12, 0.16][tier - 1];
+    var base = Math.min(W, H * 2.17);
+    return base * [0.085, 0.12, 0.16][tier - 1];
   }
 
   // AirStrike: the spot that covers the most enemies, else in front of Oreivax
@@ -485,16 +673,95 @@
     return { x: p.x + E * 2.5, y: p.y };
   }
 
-  function strike(result) {
+  function strike(result, key) {
     var dmg = Math.max(result, 1);
     var tier = tierOf(dmg);
+    var mix = MIXES[key] || null;
     var r = strikeRadius(tier);
     var at = pickTarget(r);
-    beam(at.x, at.y, r);
+    var color = leadColor(key);
+    var delay = 0;
+
+    if (mix && mix.well) {
+      var wr = r * mix.wellR;
+      delay = Math.min(mix.well, 0.9);
+      ring(at.x, at.y, wr, ELEMENTS.B.color, "well");
+      foesNear(at, wr).forEach(function (f) { f.pull = { x: at.x, y: at.y, until: now() + delay }; });
+    }
+
     setTimeout(function () {
-      ring(at.x, at.y, r, tier === 3);
-      foesNear(at, r).forEach(function (f) { hurt(f, dmg); });
-    }, 230);
+      beam(at.x, at.y, r, key, mix && mix.ult);
+      setTimeout(function () { land(at, r, dmg, tier, key, mix, color); }, 230);
+    }, delay * 1000);
+  }
+
+  function land(at, r, dmg, tier, key, mix, color) {
+    ring(at.x, at.y, r, color, tier === 3 ? "big" : "");
+    var hits = foesNear(at, r);
+    if (mix) pop(at.x, at.y - r * 0.9, mix.name, "mixname " + "c-" + color.slice(1));
+    else if (tier > 1) pop(at.x, at.y - r * 0.9, "Tier " + tier, "mixname");
+
+    hits.forEach(function (f) {
+      hurt(f, dmg);
+      if (!mix) return;
+      if (mix.burn) burn(f, dmg * mix.burn / 100, mix.burnS, mix.burst ? hitDamage(dmg, mix.burst) : 0);
+      if (mix.stun) stun(f, mix.stun);
+      if (mix.slow) slow(f, mix.slow, mix.slowS);
+    });
+    if (!mix) return;
+
+    if (mix.zone) {
+      var zr = r * mix.zoneR;
+      var z = { x: at.x, y: at.y, r: zr, until: now() + mix.zone, dmg: dmg * mix.zoneBurn / 100, burnS: 3, burned: [] };
+      zones.push(z);
+      var el = document.createElement("div");
+      el.className = "zone";
+      el.style.left = at.x + "px";
+      el.style.top = at.y + "px";
+      el.style.width = el.style.height = (zr * 2) + "px";
+      el.style.animationDuration = "0.4s, " + mix.zone + "s";
+      fxLayer.appendChild(el);
+      setTimeout(function () { el.remove(); }, mix.zone * 1000 + 50);
+    }
+
+    if (mix.jumps) {
+      var from = hits.length ? hits[hits.length - 1] : at;
+      var range = r * (mix.range || 1.2);
+      var path = [{ x: from.x, y: from.y }];
+      var touched = hits.slice();
+      for (var j = 0; j < mix.jumps; j++) {
+        var next = null, nd = Infinity;
+        foes.forEach(function (f) {
+          if (f.dead || touched.indexOf(f) >= 0) return;
+          var d = Math.hypot(f.x - from.x, f.y - from.y);
+          if (d < range && d < nd) { nd = d; next = f; }
+        });
+        if (!next) break;
+        touched.push(next);
+        path.push({ x: next.x, y: next.y });
+        (function (f, k) {
+          setTimeout(function () {
+            hurt(f, hitDamage(dmg, mix.chainPct), "zap");
+            stun(f, mix.chainStun);
+            if (mix.burn) burn(f, dmg * mix.burn / 100, mix.burnS);
+          }, 60 * (k + 1));
+        })(next, j);
+        from = next;
+      }
+      if (path.length > 1) zigzag(path);
+    }
+
+    if (mix.blast) {
+      setTimeout(function () {
+        var br = r * (mix.blastR || 1);
+        ring(at.x, at.y, br, color, "blast");
+        foesNear(at, br).forEach(function (f) {
+          hurt(f, hitDamage(dmg, mix.blast), mix.blastBurn ? "burn" : "");
+          if (mix.blastStun) stun(f, mix.blastStun);
+          if (mix.blastBurn) burn(f, dmg * mix.blastBurn / 100, 3);
+        });
+      }, mix.ult ? 500 : 450);
+    }
   }
 
   // ---------- Start ----------

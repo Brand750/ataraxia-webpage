@@ -209,12 +209,16 @@ p { margin: 0 0 1em; }
 .arena {
   --pw: clamp(150px, 21cqw, 250px);   /* processor width */
   --e: 40px;                          /* sprite size, set by chain.js */
-  --ink: #10141f;
   position: relative;
   container-type: inline-size;
   aspect-ratio: 2000 / 921;
   overflow: hidden;
-  background: var(--sand);
+  background:
+    radial-gradient(ellipse 22% 16% at 18% 26%, rgba(174, 117, 65, 0.45), transparent 70%),
+    radial-gradient(ellipse 18% 22% at 62% 74%, rgba(174, 117, 65, 0.4), transparent 70%),
+    radial-gradient(ellipse 26% 14% at 80% 18%, rgba(222, 170, 110, 0.35), transparent 70%),
+    radial-gradient(ellipse 14% 10% at 40% 88%, rgba(222, 170, 110, 0.35), transparent 70%),
+    #c8925a;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -223,6 +227,15 @@ p { margin: 0 0 1em; }
 
 .foes, .fx { position: absolute; inset: 0; pointer-events: none; }
 .fx { z-index: 2000; }
+.fx-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.fx-svg polyline {
+  fill: none;
+  stroke: #ffe14d;
+  stroke-width: 3;
+  stroke-linejoin: bevel;
+  filter: drop-shadow(0 0 4px #ffe14d);
+  animation: fade 0.45s ease-out forwards;
+}
 
 /* Sprites: the game's own sheets, stepped frame by frame */
 .foe, .oreivax {
@@ -242,10 +255,13 @@ p { margin: 0 0 1em; }
   will-change: transform;
 }
 .foe.hit { animation: roll 0.8s steps(8) infinite, flash 0.18s steps(1); }
-.foe.dead { animation: die 0.35s steps(3) forwards; }
+.foe.burning { filter: drop-shadow(0 0 3px #ff7a1a) drop-shadow(0 0 1px #ffb15c) sepia(0.6); }
+.foe.slowed { filter: drop-shadow(0 0 3px #7fe3c4); }
+.foe.stunned { animation-play-state: paused; filter: drop-shadow(0 0 4px #ffe14d) brightness(1.5) sepia(1) saturate(3); }
+.foe.dead { animation: die 0.35s ease-in forwards; }
 @keyframes roll { to { background-position-x: calc(var(--e) * -8); } }
 @keyframes flash { 0% { filter: brightness(3); } }
-@keyframes die { to { opacity: 0; } }
+@keyframes die { to { opacity: 0; scale: 0.3; } }
 
 .oreivax {
   width: calc(var(--e) * 1.6);
@@ -263,39 +279,56 @@ p { margin: 0 0 1em; }
   bottom: -8%;
   height: 7%;
   background: #8fd14f;
-  border: 2px solid var(--ink);
+  border: 2px solid #10141f;
 }
 @keyframes idle { to { background-position-x: calc(var(--e) * -1.6 * 6); } }
 
 .crystals {
   position: absolute;
-  top: 2cqw;
-  right: 2cqw;
+  top: 2.2cqw;
+  right: 2.2cqw;
   z-index: 2001;
-  padding: 0.15em 0.6em;
-  background: var(--ink);
-  font: 700 clamp(14px, 1.6cqw, 20px)/1.4 var(--body);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.25em 0.7em 0.25em 1em;
+  background: #1b2333;
+  border: 3px solid #10141f;
+  border-radius: 999px;
+  font: 700 clamp(15px, 1.8cqw, 24px) var(--display);
   color: #fff;
-  font-variant-numeric: tabular-nums;
 }
-.crystals::before { content: "Crystals "; font-weight: 400; color: var(--muted); }
+.crystals::after {
+  content: "";
+  width: 0.7em;
+  height: 0.7em;
+  background: linear-gradient(135deg, #ebede9 40%, #73bed3 41%);
+  transform: rotate(45deg);
+}
 
-/* Damage numbers */
+/* Damage numbers and mix names */
 .pop {
   position: absolute;
   transform: translate(-50%, -50%);
-  font: 700 clamp(15px, 2cqw, 26px) var(--body);
-  color: #fff;
-  text-shadow: 2px 0 var(--ink), -2px 0 var(--ink), 0 2px var(--ink), 0 -2px var(--ink);
+  font: 700 clamp(15px, 2.1cqw, 28px) var(--display);
+  color: #f6e7c1;
+  text-shadow: 2px 0 #10141f, -2px 0 #10141f, 0 2px #10141f, 0 -2px #10141f, 2px 2px #10141f;
   white-space: nowrap;
-  animation: rise 0.7s ease-out forwards;
+  animation: rise 0.8s ease-out forwards;
 }
+.pop.burn { color: #ff9a3d; font-size: clamp(12px, 1.5cqw, 20px); }
+.pop.zap { color: #ffe14d; font-size: clamp(12px, 1.5cqw, 20px); }
+.pop.mixname { font-size: clamp(18px, 3cqw, 40px); text-transform: uppercase; letter-spacing: 0.04em; color: #73bed3; animation-duration: 1.3s; }
+.pop.c-ff7a1a { color: #ff7a1a; }
+.pop.c-7fe3c4 { color: #7fe3c4; }
+.pop.c-ffe14d { color: #ffe14d; }
 @keyframes rise {
-  from { opacity: 1; transform: translate(-50%, -50%); }
-  to { opacity: 0; transform: translate(-50%, -160%); }
+  0% { opacity: 0; transform: translate(-50%, -20%) scale(0.7); }
+  15% { opacity: 1; transform: translate(-50%, -60%) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -180%) scale(1); }
 }
 
-/* Strike: the beam sheet and where it lands */
+/* Strike: the beam sheet, its ring, fire zones */
 .beam {
   position: absolute;
   width: var(--bw);
@@ -304,22 +337,45 @@ p { margin: 0 0 1em; }
   image-rendering: pixelated;
   animation: beam 0.62s steps(14) forwards;
 }
+.beam.ult { animation-duration: 0.8s; }
+.beam.tint-ff7a1a { filter: hue-rotate(200deg) saturate(3.2) brightness(1.05); }
+.beam.tint-7fe3c4 { filter: hue-rotate(-28deg) saturate(1.4) brightness(1.1); }
+.beam.tint-ffe14d { filter: hue-rotate(215deg) saturate(3) brightness(1.35); }
 @keyframes beam { to { background-position-x: calc(var(--bw) * -14); } }
 
 .ring-fx {
   position: absolute;
   border-radius: 50%;
-  border: max(3px, 0.4cqw) solid var(--gold);
-  transform: translate(-50%, -50%);
-  animation: ring 0.4s steps(4) forwards;
+  border: max(3px, 0.45cqw) dashed var(--c);
+  background: radial-gradient(circle, transparent 45%, color-mix(in srgb, var(--c) 35%, transparent) 70%, transparent 71%);
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: ring 0.5s ease-out forwards;
 }
-.ring-fx.big { border-width: max(4px, 0.6cqw); }
+.ring-fx.big { border-width: max(4px, 0.7cqw); animation-duration: 0.7s; }
+.ring-fx.small { animation-duration: 0.35s; }
+.ring-fx.well { animation: well 0.8s ease-in forwards; }
 @keyframes ring {
-  from { transform: translate(-50%, -50%) scale(0.4); }
-  to { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.2); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes well {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.1) rotate(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(200deg); }
 }
 
-/* Readout: the sum as it is built */
+.zone {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 177, 92, 0.55), rgba(255, 122, 26, 0.35) 55%, transparent 70%);
+  animation: zonein 0.4s ease-out, fade 2s linear forwards;
+}
+@keyframes zonein { from { transform: translate(-50%, -50%) scale(0.3); } }
+@keyframes fade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Readout: the operation as it is built, and the mix it makes */
 .readout {
   position: absolute;
   z-index: 2001;
@@ -328,29 +384,40 @@ p { margin: 0 0 1em; }
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.4rem;
+  gap: 0.2rem;
+  text-align: right;
   pointer-events: none;
-}
-.eq:not(:empty) {
-  padding: 0.1em 0.45em;
-  background: var(--ink);
+  font-family: var(--display);
   color: #fff;
-  font: 700 clamp(18px, 2.6cqw, 32px)/1.3 var(--body);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  text-shadow: 2px 0 #10141f, -2px 0 #10141f, 0 2px #10141f, 0 -2px #10141f;
 }
+.eq { font-family: var(--body); font-size: clamp(20px, 2.8cqw, 36px); font-weight: 700; letter-spacing: 0.04em; min-height: 1.2em; }
+.mix b {
+  display: block;
+  font-size: clamp(16px, 2.2cqw, 30px);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(2px 2px 0 #10141f);
+}
+.mix span { display: block; font-size: clamp(12px, 1.4cqw, 18px); }
 .fire {
   pointer-events: auto;
-  padding: 0.3rem 0.9rem;
-  border: 0;
+  margin-top: 0.3rem;
+  padding: 0.35rem 0.9rem;
+  border: 3px solid #10141f;
   background: var(--gold);
-  color: var(--ink);
-  font: 700 clamp(14px, 1.5cqw, 18px) var(--body);
+  color: #10141f;
+  font: 700 clamp(14px, 1.5cqw, 18px) var(--display);
+  text-shadow: none;
   cursor: pointer;
 }
 .fire:disabled { background: #6f7a7d; color: #222; cursor: default; }
 
-/* Reserve: five more orbs that move into empty slots after a strike */
+/* Reserve: five more orbs that slide in after a cast */
 .reserve {
   position: absolute;
   z-index: 2001;
@@ -358,22 +425,25 @@ p { margin: 0 0 1em; }
   bottom: calc(var(--pw) + 2.6cqw);
   display: flex;
   align-items: center;
-  gap: 0.5em;
-  font: 700 clamp(11px, 1.2cqw, 15px) var(--body);
-  color: var(--ink);
+  gap: 0.6em;
+  font: 700 clamp(10px, 1.1cqw, 14px) var(--display);
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
-.reserve-orbs { display: flex; gap: 0.3em; }
+.reserve-orbs { display: flex; gap: 0.35em; }
 .reserve-orbs .r {
+  position: relative;
   display: grid;
   place-items: center;
   width: clamp(22px, 2.9cqw, 36px);
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 2px solid var(--ink);
   font: 700 clamp(12px, 1.6cqw, 20px)/1 var(--body);
-  color: var(--ink);
+  color: #10141f;
+  letter-spacing: 0;
 }
-.reserve-orbs .r.empty { background: transparent; border-style: dashed; opacity: 0.5; }
+.reserve-orbs .r.empty { background: rgba(16, 20, 31, 0.55); }
 
 /* The processor: five slots on a pentagon ring */
 .proc {
@@ -386,38 +456,85 @@ p { margin: 0 0 1em; }
   container-type: inline-size;
   touch-action: none;
 }
+.proc::before {   /* charges up behind the slots while a valid chain is held */
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--charge, #73bed3) 45%, transparent), transparent 68%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.proc.charged::before { opacity: 1; }
+.proc.ult::before { animation: spin 3s linear infinite; background: conic-gradient(from 0deg, transparent, color-mix(in srgb, var(--charge) 60%, transparent), transparent 30%, color-mix(in srgb, var(--charge) 60%, transparent) 50%, transparent 65%); -webkit-mask: radial-gradient(circle, transparent 52%, #000 54%, #000 66%, transparent 68%); mask: radial-gradient(circle, transparent 52%, #000 54%, #000 66%, transparent 68%); }
+@keyframes spin { to { rotate: 1turn; } }
+
 .proc svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.proc .track { fill: none; stroke: var(--ink); stroke-width: 1.5; opacity: 0.35; }
-.proc .links { fill: none; stroke: var(--ink); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.proc .track-shadow { fill: none; stroke: #10141f; stroke-width: 4.2; }
+.proc .track { fill: none; stroke: #73bed3; stroke-width: 2.2; }
+.proc .links { fill: none; stroke: #73bed3; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 1.5px #fff); }
 
 .slot {
   position: absolute;
   width: 27%;
   aspect-ratio: 1;
   padding: 0;
-  border: 1cqw solid var(--ink);
+  border: 0;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
   font: 700 14cqw/1 var(--body);
-  color: var(--ink);
+  color: #10141f;
   cursor: grab;
+  box-shadow: inset 0 0 0 1cqw #10141f, inset 0 -2.2cqw 0 rgba(0, 0, 0, 0.18);
+  transition: transform 0.12s;
 }
-.slot.empty { cursor: default; border-style: dashed; background: transparent; opacity: 0.45; }
+.slot.empty { cursor: default; box-shadow: inset 0 0 0 0.8cqw rgba(164, 221, 219, 0.45); background: rgba(16, 20, 31, 0.45); }
+.slot.kind-o.empty { box-shadow: inset 0 0 0 0.8cqw rgba(223, 132, 165, 0.5); }
 
-.slot.number, .r.number { background: var(--crystal); }
-.slot.operator, .r.operator { background: var(--operator); }
+.slot.number, .r.number { background: #73bed3; }
+.slot.operator, .r.operator { background: #df84a5; }
 
-/* Selected: dark orb, light digit */
-.slot.sel { background: var(--ink); color: #fff; }
+/* Elemental numbers: the game's orb art behind the digit */
+.slot.el, .r.el { background: transparent; box-shadow: none; }
+.slot.el::before, .r.el::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  z-index: -1;
+  background: url("img/sprites/element-orbs.png") 0 0 / 300% 100% no-repeat;
+  image-rendering: pixelated;
+}
+.slot.el { isolation: isolate; }
+.r.el { isolation: isolate; }
+.heat::before { background-position-x: 0 !important; }
+.electric::before { background-position-x: 50% !important; }
+.wind::before { background-position-x: 100% !important; }
 
-.slot.arrive { animation: arrive-slot 0.2s steps(2); }
-.r.arrive { animation: arrive 0.2s steps(2); }
-@keyframes arrive { from { opacity: 0; } }
-@keyframes arrive-slot { from { opacity: 0; } }
+/* Selected: dark orb, coloured rim, white digit */
+.slot.sel { background: #10141f; color: #fff; transform: translate(-50%, -50%) scale(1.06); box-shadow: inset 0 0 0 1.4cqw #73bed3; }
+.slot.operator.sel { box-shadow: inset 0 0 0 1.4cqw #df84a5; }
+.slot.el.sel { background: transparent; text-shadow: 0 0 2px #10141f, 2px 2px 0 #10141f; }
+.slot.el.sel::before { filter: brightness(0.55); }
+.slot.el.sel::after {
+  content: "";
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  border: 1.2cqw solid #fff;
+}
+
+.arrive { animation: arrive 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.slot.arrive { animation: arrive-slot 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes arrive { from { scale: 0.3; opacity: 0; } }
+@keyframes arrive-slot { from { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } }
 
 .legend { margin: 0.8rem 0 0; color: var(--muted); font-size: var(--step--1); }
+.legend span { font-weight: 700; }
+.legend .heat { color: #ff9a3d; }
+.legend .wind { color: #7fe3c4; }
+.legend .electric { color: #ffe14d; }
 
 .visually-hidden {
   position: absolute;
@@ -432,6 +549,7 @@ p { margin: 0 0 1em; }
   .arena { aspect-ratio: 3 / 4; --pw: 52cqw; }
   .readout { right: 3cqw; bottom: calc(var(--pw) + 12cqw); }
   .reserve { bottom: calc(var(--pw) + 3cqw); }
+  .crystals { font-size: 15px; }
 }
 
 /* ---------- Sections on the ground ---------- */
@@ -590,6 +708,8 @@ details > div { padding-bottom: 1rem; }
 
 @media (prefers-reduced-motion: reduce) {
   .ship { animation: none; right: 4%; }
+  .slot, .slot.sel { transition: none; }
+  .proc.ult::before { animation: none; }
 }
 
 /* Long addresses (the support email) wrap instead of overflowing on narrow phones. */
