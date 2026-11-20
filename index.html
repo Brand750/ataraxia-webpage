@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#172038">
   <link rel="icon" type="image/png" href="assets/img/favicon-64.png">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="assets/site.css">
+  <link rel="stylesheet" href="assets/site.css?v=2">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -41,15 +41,14 @@
       <section class="wrap demo" aria-labelledby="try">
         <div class="demo-head">
           <h2 id="try">Try a chain</h2>
-          <p>Drag from a number, through an operator, to a number. Let go to strike.</p>
+          <p>Drag from a number, through + or ×, to another number. Let go to strike.</p>
         </div>
         <div class="arena notched" id="arena">
           <div class="foes" aria-hidden="true"><div class="oreivax"></div></div>
-          <div class="fx" aria-hidden="true"><svg class="fx-svg"></svg></div>
+          <div class="fx" aria-hidden="true"></div>
           <p class="crystals" aria-hidden="true"><b>0</b></p>
           <div class="readout">
             <p class="eq" aria-hidden="true"></p>
-            <p class="mix" aria-hidden="true"></p>
             <button class="fire" type="button" hidden>Strike</button>
           </div>
           <div class="reserve"><span class="reserve-label" aria-hidden="true">Reserve</span><span class="reserve-orbs" role="img"></span></div>
@@ -62,7 +61,7 @@
             <button class="slot" type="button" data-i="4"></button>
           </div>
         </div>
-        <p class="legend"><span class="heat">Heat</span> burns, <span class="wind">Wind</span> pulls, <span class="electric">Electric</span> stuns. Mix them in one chain.</p>
+        <p class="legend">Bigger answers hit harder. Multiply when you can.</p>
         <p class="visually-hidden" id="announce" aria-live="polite"></p>
       </section>
       <div class="ground" aria-hidden="true"></div>
@@ -136,6 +135,6 @@
     </div>
   </footer>
 
-  <script src="assets/chain.js" defer></script>
+  <script src="assets/chain.js?v=2" defer></script>
 </body>
 </html>
